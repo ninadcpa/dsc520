@@ -1,0 +1,55 @@
+  Count Score Section
+1    10   200  Sports
+2    10   205  Sports
+3    20   235  Sports
+4    10   240  Sports
+5    10   250  Sports
+6    10   265 Regular
+'data.frame':	38 obs. of  3 variables:
+ $ Count  : int  10 10 20 10 10 10 10 30 10 10 ...
+ $ Score  : int  200 205 235 240 250 265 275 285 295 300 ...
+ $ Section: chr  "Sports" "Sports" "Sports" "Sports" ...
+     Count           Score         Section         
+ Min.   :10.00   Min.   :200.0   Length:38         
+ 1st Qu.:10.00   1st Qu.:300.0   Class :character  
+ Median :10.00   Median :322.5   Mode  :character  
+ Mean   :14.47   Mean   :317.5                     
+ 3rd Qu.:20.00   3rd Qu.:357.5                     
+ Max.   :30.00   Max.   :395.0                     
+   Count Score Section
+6     10   265 Regular
+7     10   275 Regular
+9     10   295 Regular
+10    10   300 Regular
+13    10   305 Regular
+14    10   310 Regular
+'data.frame':	19 obs. of  3 variables:
+ $ Count  : int  10 10 10 10 10 10 20 10 20 10 ...
+ $ Score  : int  265 275 295 300 305 310 320 305 320 325 ...
+ $ Section: chr  "Regular" "Regular" "Regular" "Regular" ...
+     Count           Score         Section         
+ Min.   :10.00   Min.   :265.0   Length:19         
+ 1st Qu.:10.00   1st Qu.:305.0   Class :character  
+ Median :10.00   Median :325.0   Mode  :character  
+ Mean   :15.26   Mean   :327.6                     
+ 3rd Qu.:20.00   3rd Qu.:355.0                     
+ Max.   :30.00   Max.   :380.0                     
+  Count Score Section
+1    10   200  Sports
+2    10   205  Sports
+3    20   235  Sports
+4    10   240  Sports
+5    10   250  Sports
+8    30   285  Sports
+'data.frame':	19 obs. of  3 variables:
+ $ Count  : int  10 10 20 10 10 30 20 10 10 10 ...
+ $ Score  : int  200 205 235 240 250 285 300 305 310 315 ...
+ $ Section: chr  "Sports" "Sports" "Sports" "Sports" ...
+     Count           Score         Section         
+ Min.   :10.00   Min.   :200.0   Length:19         
+ 1st Qu.:10.00   1st Qu.:267.5   Class :character  
+ Median :10.00   Median :315.0   Mode  :character  
+ Mean   :13.68   Mean   :307.4                     
+ 3rd Qu.:15.00   3rd Qu.:350.0                     
+ Max.   :30.00   Max.   :395.0                     
+[1] TRUE
