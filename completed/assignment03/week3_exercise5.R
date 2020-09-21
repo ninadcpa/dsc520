@@ -23,7 +23,8 @@ p <- ggplot(acs_14_df, aes(x=HSDegree)) +
   geom_vline(aes(xintercept=median(HSDegree)),
              color="orange", size=1, ) +
   geom_vline(aes(xintercept=mean(HSDegree)),
-             color="green", size=1)
+             color="green", size=1) +
+  stat_function(fun = function(acs_14_df) dnorm(acs_14_df, mean = mean(acs_14_df), sd = sd(acs_14_df))) 
 p
 
 p <- ggplot(acs_14_df, aes(x=HSDegree)) + 
@@ -35,6 +36,10 @@ p <- ggplot(acs_14_df, aes(x=HSDegree)) +
   ) +
   geom_density(alpha=.2, fill="#FF6666") 
 p
+
+qqnorm(acs_14_df$HSDegree)
+qqline(acs_14_df$HSDegree)
+
 
 # Display Stats
 library(pastecs)
