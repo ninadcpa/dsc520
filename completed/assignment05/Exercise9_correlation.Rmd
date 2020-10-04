@@ -11,12 +11,9 @@ output:
 As a data science intern with newly learned knowledge in skills in statistical correlation and R programming, you will analyze the results of a survey recently given to college students. You learn that the research question being investigated is: “Is there a significant relationship between the amount of time spent reading and the time spent watching television?” You are also interested if there are other significant relationships that can be discovered? The survey data is located in this `StudentSurvey.csv` file.
 
 ```{r, message=FALSE, warning=FALSE, echo = FALSE} 
-library(pander)
 library(knitr)
 library(ggplot2)
-library(psych)
-library(lsr)
-library(corrplot)
+
 setwd("/cloud/project")
 student_survey_df <-read.csv("data/student-survey.csv")
 head(student_survey_df)
@@ -25,26 +22,34 @@ head(student_survey_df)
 ## a) Use R to calculate the covariance of the Survey variables and provide an explanation of why you would use this calculation and what the results indicate.
 
 ```{r, message=FALSE, warning=FALSE, echo = TRUE} 
-pander(cov(student_survey_df), caption = "Covariance for Student Survey Attributes")
+cov(student_survey_df)
+gender0_df <-student_survey_df[ which( student_survey_df$Gender == "0"), ]
+paste('Covariance for Gender0')
+cov(gender0_df)
+paste('Covariance for Gender1')
+gender1_df <-student_survey_df[ which( student_survey_df$Gender == "1"), ]
+cov(gender1_df)
 
 ```
 
-Covariance is a measurement of how closely related two variables are based on a linear relationship. In this example, we received a covariance value of -20 between `TimeTV` and `TimeReading`, meaning that for every hours of reading time a student adds to their daily routine, their daily consumption of television is reduced, indicating a negative correlation. 
+Covariance is a measurement of how closely related two variables are based on a linear relationship. In this example, we received a covariance value of -20 between `TimeTV` and `TimeReading`, meaning that for every hours of reading time a student adds to their daily routine, their daily consumption of television descreases. Their happiness also decreases as covariance value is -10. 
+
+Covariance for Gender0 is -30 means Gender0 students likelyhood of reduction in TV watching time is more compared to geneder1 students for whom covariance is -16
 
 ## b) Examine the Survey data variables. What measurement is being used for the variables? Explain what effect changing the measurement being used for the variables would have on the covariance calculation. Would this be a problem? Explain and provide a better alternative if needed.
 
-**`TimeReading`**: This measurement seems to represent the number of hours each student spends reading a day.
+**`TimeReading`**: Daily time spent on reading by student. It seems to be in hours.
 
-**`TimeTV`**: This measurement represents the number of minutes each student spends watching TV a day. 
+**`TimeTV`**: Daily time spent on watching TV by student in minutes.
 
-**`Happiness`**: This seems to be some sort of measurement of each students happiness on some unknown scale. Having four siginificant figures would imply a high level of accuracy even though happiness isn't an easily measureable attribute.
+**`Happiness`**: Some measure of happiness with unknown unit. It seems to be % vaule as all values range.
 
-**`Gender`**: This statistic represents the gender of each student but We don't which gender is represented by 0 or 1. This attribute should be converted to a factor
+**`Gender`**:Categorical value.The values 0 and 1 represent male/female or female/male.
 
-<br> Changing the `TimeReading` and `TimeTV` attributes so they would both represent time in hours would reduce the covariance value. 
+<br> Changing the `TimeReading` and `TimeTV` attributes so they would both represent time in minutes would reduce the covariance value. 
 
 ```{r, message=FALSE, warning=FALSE, echo = TRUE} 
-cov(student_survey_df$TimeReading, student_survey_df$TimeTV / 60)
+cov(student_survey_df$TimeReading*60, student_survey_df$TimeTV)
 ```
 ## c) Choose the type of correlation test to perform, explain why you chose this test, and make a prediction if the test yields a positive or negative correlation?
 
@@ -60,20 +65,20 @@ Pearson, Kendall, and Spearman correlation tests all return p-values less than 5
 ```{r, message=FALSE, warning=FALSE, echo = FALSE} 
 ggplot(data = student_survey_df, aes(x = TimeReading, y = TimeTV)) + 
 geom_point() + 
-geom_smooth(method='lm', formula= y~x, se = FALSE, color = "red") + 
+geom_smooth(method='lm', formula= y~x, se = FALSE, color = "blue") + 
 ylab("Time Spent Watching TV (mins)") +
 xlab("Time Spent Reading (hrs)") + 
-ggtitle("Student Survey: Daily Time Spent Reading and Watching Television") +
+ggtitle("Student Survey: Reading time and TV time") +
 theme_bw()
 ```
 
-## d) Perform a correlation analysis of:
+## d) Correlation analyss
     
 ### 1) All variables
     
 ```{r, message=FALSE, warning=FALSE, echo = TRUE} 
-pander(cor(student_survey_df), 
-       caption = "Student Survey Correlation Matrix")
+
+cor(student_survey_df)
 ```
 
 ### 2) A single correlation between two a pair of the variables
@@ -81,22 +86,20 @@ pander(cor(student_survey_df),
 ```{r, message=FALSE, warning=FALSE, echo = TRUE} 
 cor.test(formula = ~ student_survey_df$TimeReading + student_survey_df$TimeTV,
          data = student_survey_df)
-```
 
-```{r, message=FALSE, warning=FALSE, echo = FALSE} 
 ggplot(data = student_survey_df, 
        aes(x = TimeReading, 
            y = TimeTV)) + 
 geom_smooth(method='lm', 
             formula= y~x, 
             se = TRUE, 
-            color = "red", 
-            fill = "red", 
+            color = "blue", 
+            fill = "white", 
             alpha = 0.3) + 
 geom_point() + 
 ylab("Time Spent Watching TV (mins)") +
 xlab("Time Spent Reading (hrs)") + 
-ggtitle("Student Survey: Daily Time Spent Reading and Watching Television") +
+ggtitle("Student Survey: Reading time and TV time") +
 theme_bw()
 ```
     
@@ -105,23 +108,6 @@ theme_bw()
 ```{r, message=FALSE, warning=FALSE, echo = TRUE} 
 cor.test(formula = ~ student_survey_df$TimeReading + student_survey_df$TimeTV,
          data = student_survey_df, conf.level = 0.99)
-```
-```{r, message=FALSE, warning=FALSE, echo = FALSE} 
-ggplot(data = student_survey_df, 
-       aes(x = TimeReading, 
-           y = TimeTV)) + 
-geom_point() + 
-geom_smooth(method='lm', 
-            formula= y~x, 
-            se = TRUE, 
-            level = 0.99, 
-            color = "red", 
-            fill = "red", 
-            alpha = 0.3) + 
-ylab("Time Spent Watching TV (mins)") +
-xlab("Time Spent Reading (hrs)") + 
-ggtitle("Student Survey: Daily Time Spent Reading and Watching Television") +
-theme_bw()
 ```
     
 
