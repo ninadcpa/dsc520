@@ -1,0 +1,137 @@
+---
+title: "Exercise 11 - Housing Data analysis and Prediction"
+author: "Ninad Patkhedkar"
+date: '2020-10-18'
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+Work individually on this assignment. You are encouraged to collaborate on ideas and strategies pertinent to this assignment. Data for this assignment is focused on real estate transactions recorded from 1964 to 2016 and can be found in Week 6 Housing.xlsx. Using your skills in statistical correlation, multiple regression and R programming, you are interested in the following variables: Sale Price and several other possible predictors.
+
+```{r, message=FALSE, warning=FALSE, echo = FALSE} 
+library(knitr)
+library(ggplot2)
+library(GGally)
+library(readxl)
+library(dplyr)
+library(lm.beta)
+
+
+setwd("/cloud/project")
+housing_df <-read_excel("data/week-6-housing.xlsx")
+head(housing_df)
+# describe(student_survey)
+```
+## a) Explain why you chose to remove data points from your ‘clean’ dataset.
+Below variables/columns doesn't seems to affect Sale price in my opinion. Hence thsese won't be considered.
+**`sale_instrument`**
+**`sitetype`**
+**`addr_full`**
+**`postalcyn`**
+**`lon`**
+**`lat`**
+**`prop_type`**
+**`present_use`**
+
+```{r, message=FALSE, warning=FALSE, echo = TRUE} 
+clean_housing_df = subset(housing_df, select = -c(sale_reason,sale_instrument,sitetype,addr_full,postalctyn,lon,lat,prop_type,present_use) )
+head(clean_housing_df)
+
+```
+## b) Create two variables; one that will contain the variables Sale Price and Square Foot of Lot (same variables used from previous assignment on simple regression) and one that will contain Sale Price and several additional predictors of your choice. Explain the basis for your additional predictor selections.
+
+There are multiple variables like year, renovated year etc. which I am not aware of how to account for. Also there are some categorical variables like zipcodes, current zoning, warning those would also have small effect but not significant. There are also some ordinal variables like sale-reason etc.
+
+I am considering simple numeric fields for Model which include square_feet_total_living, number of bedrooms, sq_ft_lot. For bathrooms I just sum up full, half and 3qtr bathroom and considered it as single numenric value. 
+
+I used ggpairs to check the correlation.
+
+```{r, message=FALSE, warning=FALSE, echo = TRUE} 
+clean_housing_df = subset(housing_df, select = -c(1,sale_reason,sale_instrument,sale_warning,zip5,ctyname,sitetype,addr_full,postalctyn,lon,lat,building_grade,year_built,year_renovated,current_zoning,prop_type,present_use) )
+clean_housing_df <- rename(clean_housing_df,sale_price = "Sale Price")
+
+ggpairs(data=clean_housing_df,columns =c(1,2,3,7) , title="Housing Data")
+
+housing_lm <- lm(sale_price ~ square_feet_total_living + bedrooms + sq_ft_lot,data=clean_housing_df)
+summary(housing_lm)
+```
+
+## Adding number of bathroom counts in Linear Model
+
+```{r, message=FALSE, warning=FALSE, echo = TRUE} 
+clean_housing_df$total_bathroom <-clean_housing_df$bath_full_count + clean_housing_df$bath_half_count + clean_housing_df$bath_3qtr_count
+
+clean_housing_df <- subset(clean_housing_df,select = -c(bath_full_count,bath_half_count,bath_3qtr_count))
+head(clean_housing_df)
+ggpairs(data=clean_housing_df, title="Housing Data with bathroom")
+housing_lm <- lm(sale_price ~ square_feet_total_living + bedrooms + sq_ft_lot + total_bathroom ,data=clean_housing_df)
+summary(housing_lm)
+```
+
+
+## c) Execute a summary() function on two variables defined in the previous step to compare the model results. What are the R2 and Adjusted R2 statistics? Explain what these results tell you about the overall model. Did the inclusion of the additional predictors help explain any large variations found in Sale Price?
+
+R2 and Adjusted R2 values before adding extra predictor variable i.e. Bathrooms
+Multiple R-squared:  0.2087,	Adjusted R-squared:  0.2085 
+
+R2 and Adjusted R2 values after adding extra predictor variable i.e. Bathrooms
+Multiple R-squared:  0.2092,	Adjusted R-squared:  0.209 
+
+So adding extra predictor variable increased R2 square values a bit but not significantly. Though additional variable selected improves Model , it doesn't very significantly.
+
+## d) Considering the parameters of the multiple regression model you have created. What are the standardized betas for each parameter and what do the values indicate?
+
+```{r, message=FALSE, warning=FALSE, echo = FALSE} 
+lm.beta(housing_lm)
+```
+square_feet_total_living is the most significant deciding factor with value 0.45. Coefficient for bedroom is showing negative. Hence I suspect something is wrong with my assumption or model.
+
+## e) Calculate the confidence intervals for the parameters in your model and explain what the results indicate.
+
+```{r, message=FALSE, warning=FALSE, echo = FALSE} 
+confint(housing_lm, level = 0.90)
+```
+
+## f) Assess the improvement of the new model compared to your original model (simple regression model) by testing whether this change is significant by performing an analysis of variance.
+
+Not sure what to do here. Its already done in #b above and Model didn't improve significantly as R square remains same.
+    
+## g) Perform casewise diagnostics to identify outliers and/or influential cases, storing each function's output in a dataframe assigned to a unique variable name.
+
+TO-DO
+
+## h) Calculate the standardized residuals using the appropriate command, specifying those that are +-2, storing the results of large residuals in a variable you create.
+
+TO-DO
+
+## i) Use the appropriate function to show the sum of large residuals.
+
+TO-DO
+
+## j) Which specific variables have large residuals (only cases that evaluate as TRUE)?
+
+TO-DO
+
+## k) Investigate further by calculating the leverage, cooks distance, and covariance rations. Comment on all cases that are problematics.
+
+TO-DO
+
+## l) Perform the necessary calculations to assess the assumption of independence and state if the condition is met or not.
+
+TO-DO
+
+## m) Perform the necessary calculations to assess the assumption of no multicollinearity and state if the condition is met or not.
+
+TO-DO
+
+## n) Visually check the assumptions related to the residuals using the plot() and hist() functions. Summarize what each graph is informing you of and if any anomalies are present.
+
+TO-DO
+
+## o) Overall, is this regression model unbiased? If an unbiased regression model, what does this tell us about the sample vs. the entire population model?
+
+TO-DO
+    
+
