@@ -37,6 +37,24 @@ lm.beta(housing_lm)
 
 confint(housing_lm, level = 0.90)
 
+outlier_values <- boxplot.stats(clean_housing_df$sale_price)$out  # outlier values.
+boxplot(clean_housing_df$sale_price, main="Sale Price", boxwex=0.1)
+mtext(paste("Outliers: ", paste(outlier_values, collapse=", ")), cex=0.6)
+OutVals = boxplot(clean_housing_df$sale_price, plot=FALSE)$out
+summary(OutVals)
+OutVals = boxplot(clean_housing_df$square_feet_total_living, plot=FALSE)$out
+summary(OutVals)
+OutVals = boxplot(clean_housing_df$bedrooms, plot=FALSE)$out
+summary(OutVals)
+OutVals = boxplot(clean_housing_df$sq_ft_lot, plot=FALSE)$out
+summary(OutVals)
+
+housing.res = resid(housing_lm)
+summary(housing.res)
+
+ggplot(housing.res, aes(x=residual)) + 
+  geom_histogram(binwidth=1)
+
 summary(beta_coef)
 head(student_survey_df)
 nrow(student_survey_df)

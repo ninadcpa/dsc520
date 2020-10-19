@@ -99,21 +99,33 @@ confint(housing_lm, level = 0.90)
 Not sure what to do here. Its already done in #b above and Model didn't improve significantly as R square remains same.
     
 ## g) Perform casewise diagnostics to identify outliers and/or influential cases, storing each function's output in a dataframe assigned to a unique variable name.
-
+```{r, message=FALSE, warning=FALSE, echo = FALSE} 
+OutVals = boxplot(clean_housing_df$sale_price, plot=FALSE)$out
+summary(OutVals)
+OutVals = boxplot(clean_housing_df$square_feet_total_living, plot=FALSE)$out
+summary(OutVals)
+OutVals = boxplot(clean_housing_df$bedrooms, plot=FALSE)$out
+summary(OutVals)
+OutVals = boxplot(clean_housing_df$sq_ft_lot, plot=FALSE)$out
+summary(OutVals)
+```
+There are some big outliers for sale_price, bedroom size and sq_ft_lot
 ## h) Calculate the standardized residuals using the appropriate command, specifying those that are +-2, storing the results of large residuals in a variable you create.
+housing.res = resid(housing_lm)
+summary(housing.res)
 
 ## i) Use the appropriate function to show the sum of large residuals.
+TO-DO
 
 ## j) Which specific variables have large residuals (only cases that evaluate as TRUE)?
-
+TO-DO
 ## k) Investigate further by calculating the leverage, cooks distance, and covariance rations. Comment on all cases that are problematics.
-
+TO-DO
 ## l) Perform the necessary calculations to assess the assumption of independence and state if the condition is met or not.
-
+TO-DO
 ## m) Perform the necessary calculations to assess the assumption of no multicollinearity and state if the condition is met or not.
-
+TO-DO
 ## n) Visually check the assumptions related to the residuals using the plot() and hist() functions. Summarize what each graph is informing you of and if any anomalies are present.
 
 ## o) Overall, is this regression model unbiased? If an unbiased regression model, what does this tell us about the sample vs. the entire population model?
-    
-
+TO-DO
