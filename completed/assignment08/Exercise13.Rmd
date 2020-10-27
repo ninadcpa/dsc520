@@ -1,0 +1,60 @@
+---
+title: "Exercise 13: Fit a Logistic Regression Model to the Thoracic Surgery Binary DataSet"
+author: "Patkhedkar Ninad"
+date: '2020-10-27'
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+
+## Exercise 13: Fit a Logistic Regression Model to the Thoracic Surgery Binary Data
+
+For this problem, you will be working with the thoracic surgery data set from the University of California Irvine machine learning repository. This dataset contains information on life expectancy in lung cancer patients after surgery.
+
+The underlying thoracic surgery data is in ARFF format. This is a text-based format with information on each of the attributes. You can load this data using a package such as foreign or by cutting and pasting the data section into a CSV file.
+
+
+a. Fit a binary logistic regression model to the data set that predicts whether or not the patient survived for one year (the Risk1Y variable) after the surgery. Use the glm() function to perform the logistic regression. See Generalized Linear Models for an example. Include a summary using the summary() function in your results.
+
+```{r, message=FALSE, warning=FALSE, echo = TRUE}
+library(knitr)
+library(foreign)
+library(caTools)
+library(pander)
+
+setwd("/cloud/project")
+patient_df <- read.arff("data/ThoraricSurgery.arff")
+head(patient_df)
+sample <- sample.split(patient_df$Risk1Yr, SplitRatio = 0.70)
+training_data = subset(patient_df, sample == TRUE)
+test_data = subset(patient_df, sample == FALSE)
+model = glm(Risk1Yr ~ . -1 , family = binomial(logit), data = training_data)
+model <- step(model, trace=FALSE);
+summary(model)
+```
+b. According to the summary, which variables had the greatest effect on the survival rate?
+
+DGNDGN1    
+DGNDGN2   
+DGNDGN3    
+DGNDGN4     
+DGNDGN5        
+DGNDGN6       
+DGNDGN8       
+PRE5          
+PRE9T         
+PRE14OC12     
+PRE14OC13      
+PRE14OC14    
+PRE30T
+
+c. To compute the accuracy of your model, use the dataset to predict the outcome variable. The percent of correct predictions is the accuracy of your model. What is the accuracy of your model?
+
+```{r, message=FALSE, warning=FALSE, echo = TRUE}
+library(pander)
+test_data$predicted = predict(model, newdata=test_data, type="response")
+pander(table(test_data$Risk1Yr, test_data$predicted> 0.5))
+```
+The logistic model looks fine for predicting False values but not great for true values.
