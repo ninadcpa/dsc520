@@ -1,0 +1,91 @@
+---
+title: 'Exercise 14: Fit a Logistic Regression Model to Previous Dataset'
+author: "Patkhedkar Ninad"
+date: "2020-10-27"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+## Exercise 14: Fit a Logistic Regression model to Previous Dataset
+
+```{r, message=FALSE, warning=FALSE, echo = TRUE}
+library(knitr)
+library(caTools)
+library(ggplot2)
+library(class)
+library(pander)
+setwd("/cloud/project")
+
+bcd_df <- read.csv("data/binary-classifier-data.csv")
+bcd_df$label <- as.factor(bcd_df$label)
+ggplot(data = bcd_df, aes(x = x, y = y, color = label)) + geom_point() +
+ggtitle("Binary Classification Data") 
+
+```
+
+
+Fit a logistic regression model to the binary-classifier-data.csv dataset from the previous assignment.
+
+```{r, message=FALSE, warning=FALSE, echo = TRUE}
+
+sample <- sample.split(bcd_df$label, SplitRatio = 0.80)
+training_data = subset(bcd_df, sample == TRUE)
+test_data = subset(bcd_df, sample == FALSE)
+glm.model = glm(label ~ . , family = binomial(logit), data = training_data)
+summary(glm.model)
+```
+a. What is the accuracy of the logistic regression classifier?
+
+```{r, message=FALSE, warning=FALSE, echo = TRUE}
+test_data$predicted = predict(glm.model, newdata=test_data, type="response")
+pander(table(test_data$label, test_data$predicted> 0.5))
+```
+
+Accuracy is poor.More attributes would have helped to make better predictions. 
+
+b. How does the accuracy of the logistic regression classifier compare to the nearest neighbors algorithm?
+
+```{r, message=FALSE, warning=FALSE, echo = TRUE}
+
+knn.model <- knn(training_data[2:3], test_data[2:3], training_data$label, k = 1)
+mean(test_data$label != knn.model)
+predicted.values <- NULL
+error.rate <- NULL
+for(i in 1:50){
+  
+  predicted.values <- knn(training_data[2:3],test_data[2:3],training_data$label,k=i)
+  error.rate[i] <- mean(test_data$label != predicted.values)
+}
+k.values <- 1:50
+error.df <- data.frame(error.rate,k.values)
+ggplot(error.df,aes(x=k.values,y=error.rate)) + 
+  geom_point() + 
+  geom_line(color='blue') + 
+  xlab("K for KNN Model") + 
+  ylab("Error for Each K Value")
+```
+Our KNN model accuracy is much better than logistic regression model.
+
+c. Why is the accuracy of the logistic regression classifier different from that of the nearest neighbors?
+
+Logistic model only had two inputs, x and y and its difficult to get a line for our model. Plotting our estimates, we can see that the logistic regression attempted to cut a line through our data. 
+
+```{r, message=FALSE, warning=FALSE, echo = TRUE}
+glm.model = glm(label ~ . , family = binomial(logit), data = bcd_df)
+bcd_df$predicted = predict(glm.model, newdata=bcd_df, type="response")
+ggplot(data = bcd_df, aes(x = x, y = y, color = predicted > 0.5)) + 
+  geom_point() + 
+  ggtitle("Logistic Regression Model: Inaccurate Model for the Type of Data")
+```
+
+Datapoints plot can't be splitted linearly hence clustering model would be more accurate. 
+
+```{r, message=FALSE, warning=FALSE, echo = TRUE}
+
+test_data$predicted <- knn(training_data[2:3], test_data[2:3], training_data$label, k = 5)
+ggplot(data = test_data, aes(x = x, y = y, color = predicted == label)) + 
+  geom_point() + 
+  ggtitle("KNN Model: Good fit for the data provided")
+```
