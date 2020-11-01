@@ -28,7 +28,7 @@ test_bi_data = subset(bi_df, sample == FALSE)
 predicted.values <- knn(training_bi_data[2:3], test_bi_data[2:3], training_bi_data$label, k = 5)
 library(caret)
 confusion_matrix <- confusionMatrix(table(predicted.values  ,test_bi_data$label))
-str(confusion_matrix)
+accuracy <- ((confusion_matrix[1,1] + confusion_matrix[2, 2]) / sum(confusion_matrix))
 confusion_matrix
 confusion_matrix$Accuracy
 accuracy <- function(x){sum(diag(x)/(sum(rowSums(x)))) * 100}
@@ -39,10 +39,21 @@ accuracy
 # we want to test with 6 different values for k, hence creating vector of length 6
 accuracy_vals <- c()
 
+iterations = 6
+variables = 2
+
+output <- matrix(ncol=variables, nrow=iterations)
+
+for (i in k_vals) {
+  sprintf(i)
+}
+
 for (i in k_vals) {
   predicted.values <- knn(training_bi_data[2:3], test_bi_data[2:3], training_bi_data$label, k = i)
+  #output[i,] <- 100 * sum(test_bi_data$label == predicted.values)/NROW(test_bi_data$label)
   accuracy_vals <-c(accuracy_vals,100 * sum(test_bi_data$label == predicted.values)/NROW(test_bi_data$label))
 }
+output
 accuracy_vals
 
 k_accuracy_df <- data.frame(k_vals, accuracy_vals)
@@ -57,5 +68,5 @@ ggplot(data=k_accuracy_df, aes(x=k_vals, y=accuracy_vals, group=1)) +
   ) +
   geom_point()
 
-autoplot(kmeans(bi_df, 3), data = bi_df,
+autoplot(kmeans(bi_df, 10), data = bi_df,
          label = TRUE, label.size = 3, frame = TRUE)
