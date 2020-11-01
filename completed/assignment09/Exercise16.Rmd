@@ -1,0 +1,79 @@
+---
+title: 'Exercise 16: Clustering'
+author: "Patkhedkar Ninad"
+date: "2020-11-02"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+## Exercise 16: Clustering
+
+In this problem, you will use the k-means clustering algorithm to look for patterns in an unlabeled dataset. The dataset for this problem is found at data/clustering-data.csv.
+
+a. Plot the dataset using a scatter plot.
+
+```{r, message=FALSE, warning=FALSE, echo = TRUE}
+library(ggplot2)
+library(ggfortify)
+library(caTools)
+library(knitr)
+library(pander)
+library(class)
+library(tidyverse)
+
+setwd("/cloud/project/")
+
+ex16_data <- read.csv("data/clustering-data.csv")
+ggplot(ex16_data, aes(x=x, y=y)) +
+  geom_point(shape=18, color="orange")
+```
+
+
+b. Fit the dataset using the k-means algorithm from k=2 to k=12. Create a scatter plot of the resultant clusters for each value of k.
+
+```{r, message=FALSE, warning=FALSE, echo = TRUE}
+for(i in 2:12){
+  set.seed(123)
+  ex16_data.cluster <- kmeans(ex16_data, i)
+  ex16_data$cluster <- as.factor(ex16_data.cluster$cluster)
+  p <- ggplot(data = ex16_data, 
+              aes(x = x, 
+                  y = y, 
+                  color = cluster)) + 
+    geom_point(size = 0.3) + 
+    geom_point(data = as.data.frame(ex16_data.cluster$centers), 
+               color = "black", 
+               shape = 20, 
+               size = 3) + 
+    ggtitle(paste("K-Means with k == ", i, sep ="")) +
+    theme_bw()
+  print(p)
+}
+
+```
+c. As k-means is an unsupervised algorithm, you cannot compute the accuracy as there are no correct values to compare the output to. Instead, you will use the average distance from the center of each cluster as a measure of how well the model fits the data. To calculate this metric, simply compute the distance of each data point to the center of the cluster it is assigned to and take the average value of all of those distances.
+```{r, message=FALSE, warning=FALSE, echo = TRUE}
+# function to compute total within-cluster sum of square 
+wss <- function(k) {
+  kmeans(ex16_data, k, nstart = 10 )$tot.withinss
+}
+
+# Compute and plot wss for k = 2 to k = 12
+k.values <- 2:12
+
+# extract wss for 2-15 clusters
+wss_values <- map_dbl(k.values, wss)
+wss_values
+```
+
+Calculate this average distance from the center of each cluster for each value of k and plot it as a line chart where k is the x-axis and the average distance is the y-axis.
+
+One way of determining the “right” number of clusters is to look at the graph of k versus average distance and finding the “elbow point”. Looking at the graph you generated in the previous example, what is the elbow point for this dataset?
+```{r, message=FALSE, warning=FALSE, echo = TRUE}
+plot(k.values, wss_values,
+     type="b", pch = 19, frame = FALSE, 
+     xlab="Number of clusters K",
+     ylab="Total within-clusters sum of squares")
+```
+Looking at result **6** looks to be optimal number of clusters as there is kind of bend in elbow at 6.
