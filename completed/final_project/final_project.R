@@ -1,7 +1,10 @@
 library("dplyr")
 library("janitor")
+library(skimr)
 
 options("width"=200)
+setwd("/cloud/project/completed/final_project")
+
 
 df_jee03 <- read.csv("jeee16t03.csv")
 df_jee03 <- df_jee03 %>% clean_names() %>%
@@ -31,5 +34,7 @@ head(df_jee11[,1:3])
 df_consolidated <- inner_join(df_jee08, df_jee03, by = "state")
 df_consolidated <- inner_join(df_consolidated, df_jee11, by = "state")
 
-df_consolidated %>% select(-c(population))
+df_consolidated <- df_consolidated %>% select(-c(population))
 str(df_consolidated)
+skim(df_consolidated)
+summary(df_consolidated)
