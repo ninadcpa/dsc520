@@ -47,12 +47,11 @@ summary(df_consolidated)
 
 library("usmap")
 # Population on US map
-plot_usmap(data = df_consolidated, values = "population_k",  color = "grey", labels=TRUE) + 
+plot_usmap(data = df_consolidated, values = "population_k",  color = "grey", labels=FALSE) + 
   scale_fill_continuous( low = "white", high = "skyblue", 
                          name = "Population in Thousands", label = scales::comma
   ) + 
   theme(legend.position = "right") + 
-  theme(panel.background = element_rect(colour = "black")) + 
   labs(title = "Population in Thousands by State", caption = "Source: @https://bjs.gov")
 # Direct expsense 
 plot_usmap(data = df_consolidated, values = "total_justice_system_pc",  color = "grey", labels=FALSE) + 
@@ -70,12 +69,30 @@ plot_usmap(data = df_consolidated, values = "total_direct_expenditure",  color =
   theme(legend.position = "right") + 
   theme(panel.background = element_rect(colour = "black")) + 
   labs(title = "Direct Expense in Thousands by State", caption = "Source: @https://bjs.gov")
+
 cor(df_consolidated$population_k,df_consolidated$total_direct_expenditure)
 cor(df_consolidated$population_k,df_consolidated$total_justice_system_pc)
 
 direct_expense_lm <-  lm(df_consolidated$total_direct_expenditure ~ df_consolidated$population_k)
 summary(direct_expense_lm)
 
+direct_expense_predict_df <- data.frame(total_direct_expenditure = predict(direct_expense_lm, df_consolidated), population_k=df_consolidated$population_k)
+## Plot the predictions against the original data
+ggplot(data = df_consolidated, aes(y = total_direct_expenditure, x = population_k)) +
+  geom_point(color='blue') +
+  geom_line(color='red',data = direct_expense_predict_df, aes(y=total_direct_expenditure, x=population_k))
+
+per_capita_lm <- lm(df_consolidated$total_justice_system_pc ~ df_consolidated$population_k)
+summary(per_capita_lm)
+ggplot(df_consolidated, aes(x=population_k, y=total_justice_system_pc)) +
+  geom_point(aes(color = total_justice_system_pc)) +
+  geom_point() + geom_smooth(se=FALSE,method = "lm") +
+  labs(
+    title = "Population vs Per Capita expense",
+    caption = "Data from Scores.csv",
+    x = "Population in Thousands",
+    y = "Per Capita expense $"
+  ) 
 total_justice_system_pc_lm <-  lm(df_consolidated$total_justice_system_pc ~ df_consolidated$population_k)
 summary(total_justice_system_pc_lm)
 
@@ -93,7 +110,7 @@ p <- ggplot(df_consolidated, aes(x=pp_average_earnings)) +
 p
 ggplot(df_consolidated, aes(x=as.numeric(population_k), y=as.numeric(pp_average_earnings))) +
   geom_point(aes(color = as.numeric(pp_average_earnings))) +
-  geom_smooth(se = FALSE, method = "lm") +
+  geom_point() + geom_smooth() +
   labs(
     title = "Population vs Police Earnings",
     caption = "Data from Scores.csv",
@@ -131,3 +148,18 @@ g <- ggplot(df_consolidated) +
   scale_fill_distiller("Population in Thousands", palette="Spectral") +
   ggtitle("Population by State")
 ggplotly(g)
+
+df_diff <- df_consolidated$total_direct_expenditure - (df_consolidated$total_justice_system_amount +
+                                                      df_consolidated$police_protection_amount +
+                                                        df_consolidated$judician_and_legal_amount +
+                                                        df_consolidated$corrections_amount)
+head(df_diff,60)
+
+df_consolidated$fulltime_parttime_ratio <- (df_consolidated$tjs_full_time_employees /df_consolidated$tjs_full_time_equivalent)
+                                              
+head(df_consolidated[,c('state','fulltime_parttime_ratio')],60)
+
+pp_earning_df <- df_consolidated[ df_consolidated$pp_average_earnings > quantile(df_consolidated$pp_average_earnings , 0.50, na.rm = TRUE ),]
+head(pp_earning_df[,c('state','pp_average_earnings')],60)
+na.omit(df_consolidated)
+cor(df_consolidated$pp_average_earnings,df_consolidated$total_direct_expenditure)

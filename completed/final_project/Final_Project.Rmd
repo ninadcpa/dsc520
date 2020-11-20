@@ -135,15 +135,14 @@ Scatter plots, Histograms and Cluster plots will help with findings on questions
 ## Do you plan on incorporating any machine learning techniques to answer your research questions? Explain. 
 Yes, I plan to use k clustering for classification of states on some metrics like salaries etc.
 
-```{r,figures-side, fig.show="hold", out.width="50%"}
+```{r,figures-side, fig.show="hold", out.width="30%"}
 library("evaluate")
 library("usmap")
-plot_usmap(data = df_consolidated, values = "population_k",  color = "grey", labels=TRUE) + 
+plot_usmap(data = df_consolidated, values = "population_k",  color = "grey", labels=FALSE) + 
   scale_fill_continuous( low = "white", high = "skyblue", 
                          name = "Population in Thousands", label = scales::comma
   ) + 
   theme(legend.position = "right") + 
-  theme(panel.background = element_rect(colour = "black")) + 
   labs(title = "Population in Thousands by State", caption = "Source: @https://bjs.gov")
 
 plot_usmap(data = df_consolidated, values = "total_direct_expenditure",  color = "grey", labels=FALSE) + 
@@ -151,6 +150,5 @@ plot_usmap(data = df_consolidated, values = "total_direct_expenditure",  color =
                          name = "Dollars in Thousands", label = scales::comma
   ) + 
   theme(legend.position = "right") + 
-  theme(panel.background = element_rect(colour = "black")) + 
   labs(title = "Direct Expense in Thousands by State", caption = "Source: @https://bjs.gov")
 ```
