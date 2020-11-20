@@ -14,7 +14,7 @@ df_jee03 <- df_jee03 %>% clean_names() %>%
               rename(population_k = population_2016_thousands)
 
 df_jee03 <- df_jee03 %>% filter(population_k != "-")
-df_jee03$population_k <- as.numeric(as.character(df_jee03$population_k))
+df_jee03$population_k <- suppressWarnings(as.numeric(as.character(df_jee03$population_k)))
 str(df_jee03)
 df_jee03 <- df_jee03[-1,]
 head(df_jee03[,1:5],10)
@@ -33,7 +33,8 @@ head(df_jee08[,1:3])
 
 df_jee11 <- read.csv("jeee16t11.csv")
 df_jee11 <- df_jee11 %>% clean_names() %>% filter(state != "Total")
-df_jee11$pp_average_earnings <- as.numeric(as.character(df_jee11$pp_average_earnings))
+df_jee11$pp_average_earnings <- suppressWarnings(as.numeric(as.character(df_jee11$pp_average_earnings)))
+df_jee11 <- na.omit(df_jee11)
 str(df_jee11)
 head(df_jee11[,1:3]) 
 
@@ -163,3 +164,5 @@ pp_earning_df <- df_consolidated[ df_consolidated$pp_average_earnings > quantile
 head(pp_earning_df[,c('state','pp_average_earnings')],60)
 na.omit(df_consolidated)
 cor(df_consolidated$pp_average_earnings,df_consolidated$total_direct_expenditure)
+
+df_consolidated <- df_consolidated %>% select(c(state,population_k,total_direct_expenditure,total_justice_system_pc,pp_total_employees,jl_total_employees,pp_average_earnings))
