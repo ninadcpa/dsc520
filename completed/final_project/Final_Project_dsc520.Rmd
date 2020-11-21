@@ -3,8 +3,8 @@ title: "Final Project - Justice & Legal System Analysis by States"
 author: "Patkhedkar Ninad"
 date: '2020-11-19'
 output:
-  word_document: default
   pdf_document: default
+  word_document: default
   html_document: default
 ---
 
@@ -43,7 +43,7 @@ What are the factors that affect overall cost of Justice & Legal system?
 For Definitions, Methodology and other information, refer detailed guide - https://www.bjs.gov/content/pub/pdf/jeeeguide.pdf
 
 # How you addressed this problem statement
-First I will clean each dataset file and create a consolidated dataset. Then I will identify and filter variables of interest. I will generate correlation,linear regression, and basic summary ﬁndings. I will plot my ﬁndings to visualize the data results.
+First I will clean each dataset file and create a consolidated dataset. Then I will identify and filter variables of interest. I will generate correlation,linear regression, and basic summary findings I will plot my findings to visualize the data results.
 
 My initial hypothesis is population increases overall cost but should decrese per capita cost.
 
@@ -63,7 +63,7 @@ library("knitr")
 
 options("width"=200)
 options(scipen=999)
-setwd("/home/npatkhe/dsc520/completed/final_project")
+setwd("/cloud/project/completed/final_project")
 # cleanup jeee16t03.csv
 df_jee03 <- read.csv("jeee16t03.csv")
 df_jee03 <- df_jee03 %>% clean_names() %>%
@@ -85,7 +85,6 @@ df_jee11 <- read.csv("jeee16t11.csv")
 df_jee11 <- df_jee11 %>% clean_names() %>% filter(state != "Total")
 df_jee11$pp_average_earnings <- suppressWarnings(as.numeric(as.character(df_jee11$pp_average_earnings)))
 df_jee11 <- na.omit(df_jee11)
-str(df_jee11)
 ```
 
 Now consolidate the dataset by joining on State field.
@@ -181,14 +180,17 @@ Looking at p-value and R-square model appears to correct.
 
 ### Population and Per Capita Cost relationship
 Lets check the correlation between population and per capita cost of justice system.
-```{r, message=FALSE, warning=FALSE, echo = TRUE}
+```{r,message=FALSE, warning=FALSE, echo = TRUE}
 plot_usmap(data = df_consolidated, values = "total_justice_system_pc",  color = "grey", labels=FALSE) + 
   scale_fill_continuous( low = "white", high = "green", 
                          name = "Dollars", label = scales::comma
   ) + 
   theme(legend.position = "right") + 
-  theme(panel.background = element_rect(colour = "black")) + 
   labs(title = "Justice system cost per capita by State", caption = "Source: @https://bjs.gov")
+
+```
+
+```{r, message=FALSE, warning=FALSE, echo = TRUE}
 cor(df_consolidated$population_k,df_consolidated$total_justice_system_pc)
 ```
 Map shows per capita cost hasn't decresed with state population. For states like California it is still high.
