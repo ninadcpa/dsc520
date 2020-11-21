@@ -3,9 +3,9 @@ title: "Final Project - Justice & Legal System Analysis by States"
 author: "Patkhedkar Ninad"
 date: '2020-11-19'
 output:
-  pdf_document: default
-  word_document: default
   html_document: default
+  word_document: default
+  pdf_document: default
 ---
 
 # Introduction
@@ -60,9 +60,13 @@ library("dplyr")
 library("janitor")
 library("ggplot2")
 library("knitr")
+library("kableExtra")
+library("tidyverse")
+library("papeR")
 
 options("width"=200)
 options(scipen=999)
+options(knitr.duplicate.label = "allow")
 setwd("/cloud/project/completed/final_project")
 # cleanup jeee16t03.csv
 df_jee03 <- read.csv("jeee16t03.csv")
@@ -121,12 +125,14 @@ str(df_consolidated)
 ```
 So overall data selected for analysis looks like as below
 ```{r, message=FALSE, warning=FALSE, echo = TRUE}
-kable(head(df_consolidated), caption="Justice and Legal System - 2016")
+kable(head(df_consolidated))%>% kable_styling()
+kable(head(df_consolidated[,c("state","population_k","total_direct_expenditure","total_justice_system_pc","pp_average_earnings")]), caption="Justice and Legal System - 2016") %>% kable_styling()
 ```
 
 Lets Summerize the data
 ```{r, message=FALSE, warning=FALSE, echo = TRUE}
 summary(df_consolidated)
+kable(summarize(df_consolidated, type = "numeric"))
 ```
 
 The dataset mostly contains continous variables. There are not categoriacal variables. Only State is categorical variable.
@@ -188,6 +194,15 @@ plot_usmap(data = df_consolidated, values = "total_justice_system_pc",  color = 
   theme(legend.position = "right") + 
   labs(title = "Justice system cost per capita by State", caption = "Source: @https://bjs.gov")
 
+ggplot(df_consolidated, aes(x=population_k, y=total_justice_system_pc)) +
+  geom_point(aes(color = total_justice_system_pc)) +
+  geom_point() + geom_smooth() +
+  labs(
+    title = "Population vs Per Capita expense",
+    caption = "Data from Scores.csv",
+    x = "Population in Thousands",
+    y = "Per Capita expense $"
+  ) 
 ```
 
 ```{r, message=FALSE, warning=FALSE, echo = TRUE}
