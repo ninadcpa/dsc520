@@ -1,7 +1,7 @@
 library("dplyr")
 library("janitor")
-library("skimr")
 library("ggplot2")
+library("knitr")
 
 options("width"=200)
 options(scipen=999)
@@ -43,7 +43,6 @@ df_consolidated <- inner_join(df_consolidated, df_jee11, by = "state")
 
 df_consolidated <- df_consolidated %>% select(-c(population))
 str(df_consolidated)
-skim(df_consolidated)
 summary(df_consolidated)
 
 library("usmap")
@@ -72,6 +71,11 @@ plot_usmap(data = df_consolidated, values = "total_direct_expenditure",  color =
   labs(title = "Direct Expense in Thousands by State", caption = "Source: @https://bjs.gov")
 
 cor(df_consolidated$population_k,df_consolidated$total_direct_expenditure)
+
+cor(df_consolidated$c_total_employees,df_consolidated$corrections_amount)
+cor(df_consolidated$pp_total_employees,df_consolidated$police_protection_amount)
+cor(df_consolidated$jl_total_employees,df_consolidated$judician_and_legal_amount)
+
 cor(df_consolidated$population_k,df_consolidated$total_justice_system_pc)
 
 direct_expense_lm <-  lm(df_consolidated$total_direct_expenditure ~ df_consolidated$population_k)
@@ -81,7 +85,13 @@ direct_expense_predict_df <- data.frame(total_direct_expenditure = predict(direc
 ## Plot the predictions against the original data
 ggplot(data = df_consolidated, aes(y = total_direct_expenditure, x = population_k)) +
   geom_point(color='blue') +
-  geom_line(color='red',data = direct_expense_predict_df, aes(y=total_direct_expenditure, x=population_k))
+  geom_line(color='orange',data = direct_expense_predict_df, aes(y=total_direct_expenditure, x=population_k)) +
+  labs(
+    title = "Population vs Direct Expenditure - Linear Model",
+    caption = "Data from Scores.csv",
+    x = "Population in Thousands",
+    y = "Direct Expenditure in Thousand $"
+  ) 
 
 per_capita_lm <- lm(df_consolidated$total_justice_system_pc ~ df_consolidated$population_k)
 summary(per_capita_lm)
@@ -106,8 +116,16 @@ head(df_consolidated[,c('state','pp_average_earnings')],60)
 
 
 p <- ggplot(df_consolidated, aes(x=pp_average_earnings)) +
-  geom_histogram(aes(y=..density..),color="darkblue", fill="lightblue",binwidth = 500) +
-  geom_density(alpha=.2, fill="#FF6666")
+  geom_histogram(aes(y=..density..),color="darkblue", fill="lightblue",binwidth = 100) +
+  geom_density(alpha=.2, fill="#FF6666") +
+  geom_vline(aes(xintercept=mean(as.numeric(pp_average_earnings))),
+             color="blue", linetype="dashed", size=1)
+p
+
+p <- ggplot(df_consolidated, aes(x=pp_average_earnings)) + 
+  geom_histogram(color="darkblue", fill="lightblue",binwidth = 500) +
+  geom_vline(aes(xintercept=mean(pp_average_earnings)),
+             color="blue", linetype="dashed", size=1)
 p
 ggplot(df_consolidated, aes(x=as.numeric(population_k), y=as.numeric(pp_average_earnings))) +
   geom_point(aes(color = as.numeric(pp_average_earnings))) +
@@ -166,3 +184,6 @@ na.omit(df_consolidated)
 cor(df_consolidated$pp_average_earnings,df_consolidated$total_direct_expenditure)
 
 df_consolidated <- df_consolidated %>% select(c(state,population_k,total_direct_expenditure,total_justice_system_pc,pp_total_employees,jl_total_employees,pp_average_earnings))
+kable(head(df_consolidated))
+
+cor(df_consolidated$total_justice_system_employment,df_consolidated$total_direct_expenditure)

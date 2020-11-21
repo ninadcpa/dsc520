@@ -9,21 +9,28 @@ output:
 ---
 
 # Introduction
-Effective Law and Order is one of the most important necessity of society. It has direct effect on living standard and crime rate in that area. The whole Law and Order system consists of multiple functions like   police protection services, court and civil functions and correction functions.  To effectively govern any  area, all these functions need resources i.e. people to perform duties and funding. 
+Effective Law and Order is one of the most important necessity of society. It has direct effect on living standard and crime rate in that area. The whole "Law and Order" aka Justice system consists of multiple functions which performs duties as below  
 
-In this project I will use public dataset about state wise employment and expenditures on various functions, like police protection services, judicial and civil services, correction services like prisons, facilities for the confinement, treatment, and the rehabilitation etc.  I will investigate and find more information about how effectively Justice and Legal system is managed in different states.  I will also try to find any correlation between population of state, expenses and  number of employees etc.
+* **Police Protection Services** - law enforcement, patrolling, traffic safety, parking meter read, animal warden etc.
+* **Judicial and Legal Services** -  civil and criminal functions of courts, state’s attorneys, court reporters, register of wills etc.
+* **Correction Services** - prisons, reformatories, rehabilitation centers, parole boards, pardon boards etc.
+
+To effectively govern any  area, all these functions need resources i.e. people to perform duties and funding. 
+
+In this project I will use public dataset about state wise employment and expenditures on various functions. I will investigate and find more information about how effectively Justice and Legal system is managed in different states.  I will also try to find any correlation between population of state, expenses and  number of employees etc.
 
 # Problem Statement Addressed
 What are the factors that affect overall cost of Justice & Legal system?
 
 ## Research Questions
 1. How state population affects overall cost and per capita cost?
-2. What is proportion of employees in police functions and judicial functions? 
-3. Does some state rely more on part-time workers than full time workers? 
-4. Which states pays attractive salaries to police employyes?
+2. How number of employees in police protection services affect the cost of police protection? 
+3. How number of employees in judicial and legal services affect the cost of judicial and legal functions?
+4. How number of employees in correction services affect the cost of correction functions?
+3. Which states pays attractive salaries to police employees?
 
 # Data
-**Dataset source** - Public data set for fiscal 2016 from Bureau of Justice Statistics Justice Expenditure and Employment Extracts 
+**Dataset source** - Public dataset for fiscal 2016 from Bureau of Justice Statistics Justice Expenditure and Employment Extracts 
  
 **Dataset description** - Presents estimates of government expenditures and employment at the state level for the following justice categories: police protection (the function of enforcing the law), all judicial and legal functions (including prosecution, courts, and public defense), and corrections
 
@@ -42,6 +49,7 @@ My initial hypothesis is population increases overall cost but should decrese pe
 
 # Data Prep
 I will cleaup each data set and and create a consolidated dataset by "State" in this section. Here are few things I will perform as part of cleanup  
+
 * Simplify column names by coverting to lower case and spaces replaced by underscores
 * Rename long colunmn names e.g. population_2016_thousands to population_k
 * Remove records of Total federal govt, Local city govt, Muncipalty govt data and keep only State data
@@ -50,7 +58,6 @@ I will cleaup each data set and and create a consolidated dataset by "State" in 
 ```{r, message=FALSE, warning=FALSE, echo = TRUE}
 library("dplyr")
 library("janitor")
-library("skimr")
 library("ggplot2")
 library("knitr")
 
@@ -68,7 +75,7 @@ df_jee03 <- df_jee03[-1,]
 df_jee03$state <- sub("\\(.*", "",df_jee03$state )
 trim <- function (x) gsub("^\\s+|\\s+$", "", x)
 df_jee03$state <- trim(df_jee03$state)
-# clean up jeee16t08.csv
+# cleanup jeee16t08.csv
 df_jee08 <- read.csv("jeee16t08.csv")
 df_jee08 <-df_jee08 %>% clean_names() %>%
                rename(population = population_2016)
@@ -78,6 +85,7 @@ df_jee11 <- read.csv("jeee16t11.csv")
 df_jee11 <- df_jee11 %>% clean_names() %>% filter(state != "Total")
 df_jee11$pp_average_earnings <- suppressWarnings(as.numeric(as.character(df_jee11$pp_average_earnings)))
 df_jee11 <- na.omit(df_jee11)
+str(df_jee11)
 ```
 
 Now consolidate the dataset by joining on State field.
@@ -93,23 +101,153 @@ We will keep field which represents population in thousands as its easy to follo
 df_consolidated <- df_consolidated %>% select(-c(population))
 ```
 
-Now we have total 49 Observations and 41 variables in consolidated dataset. I have identified below variables for my analysis work. These variables are from all 3 different files used.  
+Now we have total 49 Observations and 41 variables in consolidated dataset. Though there are 50 states, data for state of "Hawai" had missing fields and hence omitted by na.omit() used above.I have identified below variables for my analysis work. These variables are from all 3 different files used.  
 
-* *state* - US state name  
-* *population_k* - Population in thousands  
+* *state* - US state name
+* *population_k* - Population in thousands
 * *total_direct_expenditure* - Total expenditure in Thousands Dollars
-* *total_justice_system_pc* - Per capita (10,000 population) cost in Dollars for justice system which include police, judicial and civil, correction functions  
-* *pp_total_employees* - Police protection system employees  
-* *jl_total_employees* - Judicial and Legal system employees  
+* *total_justice_system_pc* - Per capita (10,000 population) cost in Dollars for justice system which include police, judicial and civil, correction functions
+* *pp_total_employees* - Police protection services employees
+* *jl_total_employees* - Judicial and Legal services employees
+* *c_total_employees* - Correction services employees
+* *police_protection_amount* - Police protection cost
+* *judician_and_legal_amount* - Judicial and Legal cost
+* *corrections_amount* - Correction services cost
 * *pp_average_earnings* - Police protection average earnings in Dollars
 
+```{r, message=FALSE, warning=FALSE, echo = TRUE}
+df_consolidated <- df_consolidated %>% select(c(state,population_k,total_direct_expenditure,total_justice_system_pc,pp_total_employees,jl_total_employees,c_total_employees,police_protection_amount,judician_and_legal_amount,corrections_amount,pp_average_earnings))
+str(df_consolidated)
+
+```
 So overall data selected for analysis looks like as below
 ```{r, message=FALSE, warning=FALSE, echo = TRUE}
-df_consolidated <- df_consolidated %>% select(c(state,population_k,total_direct_expenditure,total_justice_system_pc,pp_total_employees,jl_total_employees,pp_average_earnings))
-kable(df_consolidated, caption="Justice and Legal System - 2016")
-str(df_consolidated)
+kable(head(df_consolidated), caption="Justice and Legal System - 2016")
+```
+
+Lets Summerize the data
+```{r, message=FALSE, warning=FALSE, echo = TRUE}
 summary(df_consolidated)
 ```
 
+The dataset mostly contains continous variables. There are not categoriacal variables. Only State is categorical variable.
+
+# Analysis
+
+My initial hypothesis is overall cost of Legal and Justice system increases with Population. However at same time per Capta cost of system decreses with Population.
+
+### Population and Direct Expenditure relationship
+Lets see how population and direct cost of overall justice system looks like
+```{r,message=FALSE, warning=FALSE, echo = TRUE,figures-side, fig.show="hold", out.width="50%"}
+library("usmap")
+plot_usmap(data = df_consolidated, values = "population_k",  color = "grey", labels=FALSE) + 
+  scale_fill_continuous( low = "white", high = "skyblue", 
+                         name = "Population in Thousands", label = scales::comma
+  ) + 
+  theme(legend.position = "right") + 
+  labs(title = "Population in Thousands by State", caption = "Source: @https://bjs.gov")
+
+plot_usmap(data = df_consolidated, values = "total_direct_expenditure",  color = "grey", labels=FALSE) + 
+  scale_fill_continuous( low = "white", high = "green", 
+                         name = "Dollars in Thousands", label = scales::comma
+  ) + 
+  theme(legend.position = "right") + 
+  labs(title = "Direct Expense in Thousands Dollars by State", caption = "Source: @https://bjs.gov")
+```
+
+As expected, I see similar patten on US map for population and cost.  Lets check the co-relation between 2 variables.
+```{r, message=FALSE, warning=FALSE, echo = TRUE}
+cor(df_consolidated$population_k,df_consolidated$total_direct_expenditure)
+```
+
+There is strong positive correlation. As population increases, it directly increases overall cost of justice and legal system. I will use linear regression model and check how it fits.
+```{r, message=FALSE, warning=FALSE, echo = TRUE}
+direct_expense_lm <-  lm(df_consolidated$total_direct_expenditure ~ df_consolidated$population_k)
+summary(direct_expense_lm)
+
+direct_expense_predict_df <- data.frame(total_direct_expenditure = predict(direct_expense_lm, df_consolidated), population_k=df_consolidated$population_k)
+## Plot the predictions against the original data
+ggplot(data = df_consolidated, aes(y = total_direct_expenditure, x = population_k)) +
+  geom_point(color='blue') +
+  geom_line(color='orange',data = direct_expense_predict_df, aes(y=total_direct_expenditure, x=population_k)) +
+  labs(
+    title = "Population vs Direct Expenditure - Linear Model",
+    caption = "Data from Scores.csv",
+    x = "Population in Thousands",
+    y = "Direct Expenditure in Thousand $"
+  ) 
+```
+Looking at p-value and R-square model appears to correct.
+
+### Population and Per Capita Cost relationship
+Lets check the correlation between population and per capita cost of justice system.
+```{r, message=FALSE, warning=FALSE, echo = TRUE}
+plot_usmap(data = df_consolidated, values = "total_justice_system_pc",  color = "grey", labels=FALSE) + 
+  scale_fill_continuous( low = "white", high = "green", 
+                         name = "Dollars", label = scales::comma
+  ) + 
+  theme(legend.position = "right") + 
+  theme(panel.background = element_rect(colour = "black")) + 
+  labs(title = "Justice system cost per capita by State", caption = "Source: @https://bjs.gov")
+cor(df_consolidated$population_k,df_consolidated$total_justice_system_pc)
+```
+Map shows per capita cost hasn't decresed with state population. For states like California it is still high.
+My hypothesis was per capita cost would decrese with increase in population. Hence I was expecting strong negative correlation value. However correlation value shows weak positive correlation.
+
+It means my hypothesis was wrong.
+
+### Police protection employee and cost relationship
+```{r, message=FALSE, warning=FALSE, echo = TRUE}
+cor(df_consolidated$pp_total_employees,df_consolidated$police_protection_amount)
+```
+
+There is strong positive correlation between number of employees in Police protection services and expenditure It means as number of employees in department increases, the expenditure also increases.
+
+### Judician and Legal services  employee and cost relationship
+```{r, message=FALSE, warning=FALSE, echo = TRUE}
+cor(df_consolidated$jl_total_employees,df_consolidated$judician_and_legal_amount)
+```
+
+There is moderate positive correlation between number of employees in Police protection services and expenditure It means as number of employees in department increases, the expenditure increases moderatley. This may be because Judicain and Legal system has other sources of revenues like court fees, penalties, motor vehicle registration, tax, license fees etc.
+
+### Correction services  employee and cost relationship
+```{r, message=FALSE, warning=FALSE, echo = TRUE}
+cor(df_consolidated$c_total_employees,df_consolidated$corrections_amount)
+```
+
+There is strong positive correlation between number of employees in correction services and expenditure It means as number of employees in department increases, the expenditure of department also increases.
+
+### Police Protection staff earnings distribution
+
+I was interested to check the distribution of earnings for police protection staff. They performed very important duty in our society. Which states would attractive destination for people looking forward for police protection jobs.
+
+Lets check distribution with density plot.
+```{r, message=FALSE, warning=FALSE, echo = TRUE}
+p <- ggplot(df_consolidated, aes(x=pp_average_earnings)) +
+  geom_histogram(aes(y=..density..),color="darkblue", fill="lightblue",binwidth = 100) +
+  geom_density(alpha=.2, fill="#FF6666") +
+  geom_vline(aes(xintercept=mean(pp_average_earnings)),
+             color="blue", linetype="dashed", size=1)
+p
+```
+Distributio is positively skewed. In majority of states earning looks to range between 4000 to 6000.
+
+For better earnings, we will just filter out states where earnings are more than 3 quartile i.e. 75+ percentile.
+I will use quantile function.
+```{r, message=FALSE, warning=FALSE, echo = TRUE}
+pp_earning_df <- df_consolidated[ df_consolidated$pp_average_earnings > quantile(df_consolidated$pp_average_earnings , 0.75, na.rm = TRUE ),]
+kable(head(pp_earning_df[,c('state','pp_average_earnings')],50),caption="Lucrative states for Police Protection jobs")
+```
+
+# Implications 
+This consolidated dataset provides lot of datapoints on how Justsice System in each state spends its funding.It allows policy makers to understand expenditure in various functions and provides insight into optimization as well as investments required in each area. These insights can be used for prediction of budgets for future years. The long term implication is on well being of society in the area.
+
+# Limitations
+Its natural to compare different states on various variables in dataset. However it is important to note that, each State government is different and handles responsibilities differently. There is variation in scope of services offered by each state government. E.g. some state governments directly administer certain activities that elsewhere are undertaken by local governments, with or without fiscal aid. There is also variation in the division of responsibilities that exist for counties and cities.Governemntal structure, degree of,urbanization, and population density may affect the comparability of expenditure and employment data.
+
+# Concluding Remarks
+Its natural to observe incrase in overall expenditure on justice system with increased population and staffing to perform duties. However per capita expenditure doesn't decrease with increased population. It means there are other non self-evident facotors which are adding a to overall cost. These factors could be buildings, communication devices, equipments, utility services,contracting services, forensic labs, retirement benefits to ex-employees etc.
+
+Police protection and correction services expenditure increase with increase in employess with strong correlation. However expenditure in judician and legal services increase less moderately with increase in employyes. It means Judicial and Legal services have sources of revenues from court fees, penalties, registration services, inspection services, license services etc.
 
 
