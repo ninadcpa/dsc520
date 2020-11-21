@@ -187,3 +187,9 @@ df_consolidated <- df_consolidated %>% select(c(state,population_k,total_direct_
 kable(head(df_consolidated))
 
 cor(df_consolidated$total_justice_system_employment,df_consolidated$total_direct_expenditure)
+
+pp_earning_df <-
+  df_consolidated[df_consolidated$pp_average_earnings > quantile(df_consolidated$pp_average_earnings , 0.75, na.rm = TRUE), ]
+kable(head(pp_earning_df[, c('state', 'pp_average_earnings')], 50), caption =
+        "Lucrative states for Police Protection jobs")
+

@@ -45,14 +45,14 @@ For Definitions, Methodology and other information, refer detailed guide - https
 # How you addressed this problem statement
 First I will clean each dataset file and create a consolidated dataset. Then I will identify and filter variables of interest. I will generate correlation,linear regression, and basic summary findings I will plot my findings to visualize the data results.
 
-My initial hypothesis is population increases overall cost but should decrese per capita cost.
+My initial hypothesis is population increases overall cost but should decrease per capita cost.
 
 # Data Prep
-I will cleaup each data set and and create a consolidated dataset by "State" in this section. Here are few things I will perform as part of cleanup  
+I will cleanup each data set and and create a consolidated dataset by "State" in this section. Here are few things I will perform as part of cleanup  
 
-* Simplify column names by coverting to lower case and spaces replaced by underscores
-* Rename long colunmn names e.g. population_2016_thousands to population_k
-* Remove records of Total federal govt, Local city govt, Muncipalty govt data and keep only State data
+* Simplify column names by converting to lower case and spaces replaced by underscores
+* Rename long column names e.g. population_2016_thousands to population_k
+* Remove records of Total federal govt, Local city govt, Municipality govt data and keep only State data
 * Remove records where population is not present
 * Trim State abbreviations from records i.e. Virginia (VA) -> Virginia
 ```{r, message=FALSE, warning=FALSE, echo = TRUE}
@@ -119,55 +119,94 @@ Now we have total 49 Observations and 41 variables in consolidated dataset. Thou
 * *pp_average_earnings* - Police protection average earnings in Dollars
 
 ```{r, message=FALSE, warning=FALSE, echo = TRUE}
-df_consolidated <- df_consolidated %>% select(c(state,population_k,total_direct_expenditure,total_justice_system_pc,pp_total_employees,jl_total_employees,c_total_employees,police_protection_amount,judician_and_legal_amount,corrections_amount,pp_average_earnings))
+df_consolidated <-
+  df_consolidated %>%    select(
+    c(
+      state,
+      population_k,
+      total_direct_expenditure,
+      total_justice_system_pc,
+      pp_total_employees,
+      jl_total_employees,
+      c_total_employees,
+      police_protection_amount,
+      judician_and_legal_amount,
+      corrections_amount,
+      pp_average_earnings
+    )
+  )
 str(df_consolidated)
-
 ```
 So overall data selected for analysis looks like as below
 ```{r, message=FALSE, warning=FALSE, echo = TRUE}
-kable(head(df_consolidated))%>% kable_styling()
-kable(head(df_consolidated[,c("state","population_k","total_direct_expenditure","total_justice_system_pc","pp_average_earnings")]), caption="Justice and Legal System - 2016") %>% kable_styling()
+kable(head(df_consolidated[, c(
+  "state",
+  "population_k",
+  "total_direct_expenditure",
+  "total_justice_system_pc",
+  "pp_average_earnings"
+)]), caption = "Justice and Legal System - 2016") %>% kable_styling()
 ```
 
 Lets Summerize the data
 ```{r, message=FALSE, warning=FALSE, echo = TRUE}
 summary(df_consolidated)
+
+# Tabulur view of summary
+
 kable(summarize(df_consolidated, type = "numeric"))
 ```
 
-The dataset mostly contains continous variables. There are not categoriacal variables. Only State is categorical variable.
+The dataset mostly contains continuous variables. There are not categorical variables. Only State is categorical variable.
 
 # Analysis
 
-My initial hypothesis is overall cost of Legal and Justice system increases with Population. However at same time per Capta cost of system decreses with Population.
+My initial hypothesis is overall cost of Legal and Justice system increases with Population. However at same time per Capita cost of system decreases with Population.
 
 ### Population and Direct Expenditure relationship
 Lets see how population and direct cost of overall justice system looks like
 ```{r,message=FALSE, warning=FALSE, echo = TRUE,figures-side, fig.show="hold", out.width="50%"}
 library("usmap")
-plot_usmap(data = df_consolidated, values = "population_k",  color = "grey", labels=FALSE) + 
-  scale_fill_continuous( low = "white", high = "skyblue", 
-                         name = "Population in Thousands", label = scales::comma
-  ) + 
-  theme(legend.position = "right") + 
+plot_usmap(
+  data = df_consolidated,
+  values = "population_k",
+  color = "grey",
+  labels = FALSE
+) +
+  scale_fill_continuous(
+    low = "white",
+    high = "skyblue",
+    name = "Population in Thousands",
+    label = scales::comma
+  ) +
+  theme(legend.position = "right") +
   labs(title = "Population in Thousands by State", caption = "Source: @https://bjs.gov")
 
-plot_usmap(data = df_consolidated, values = "total_direct_expenditure",  color = "grey", labels=FALSE) + 
-  scale_fill_continuous( low = "white", high = "green", 
-                         name = "Dollars in Thousands", label = scales::comma
-  ) + 
-  theme(legend.position = "right") + 
+plot_usmap(
+  data = df_consolidated,
+  values = "total_direct_expenditure",
+  color = "grey",
+  labels = FALSE
+) +
+  scale_fill_continuous(
+    low = "white",
+    high = "green",
+    name = "Dollars in Thousands",
+    label = scales::comma
+  ) +
+  theme(legend.position = "right") +
   labs(title = "Direct Expense in Thousands Dollars by State", caption = "Source: @https://bjs.gov")
 ```
 
-As expected, I see similar patten on US map for population and cost.  Lets check the co-relation between 2 variables.
+As expected, I see similar pattern on US map for population and cost.  Lets check the co-relation between 2 variables.
 ```{r, message=FALSE, warning=FALSE, echo = TRUE}
 cor(df_consolidated$population_k,df_consolidated$total_direct_expenditure)
 ```
 
 There is strong positive correlation. As population increases, it directly increases overall cost of justice and legal system. I will use linear regression model and check how it fits.
 ```{r, message=FALSE, warning=FALSE, echo = TRUE}
-direct_expense_lm <-  lm(df_consolidated$total_direct_expenditure ~ df_consolidated$population_k)
+direct_expense_lm <-
+  lm(df_consolidated$total_direct_expenditure ~ df_consolidated$population_k)
 summary(direct_expense_lm)
 
 direct_expense_predict_df <- data.frame(total_direct_expenditure = predict(direct_expense_lm, df_consolidated), population_k=df_consolidated$population_k)
@@ -187,11 +226,19 @@ Looking at p-value and R-square model appears to correct.
 ### Population and Per Capita Cost relationship
 Lets check the correlation between population and per capita cost of justice system.
 ```{r,message=FALSE, warning=FALSE, echo = TRUE}
-plot_usmap(data = df_consolidated, values = "total_justice_system_pc",  color = "grey", labels=FALSE) + 
-  scale_fill_continuous( low = "white", high = "green", 
-                         name = "Dollars", label = scales::comma
-  ) + 
-  theme(legend.position = "right") + 
+plot_usmap(
+  data = df_consolidated,
+  values = "total_justice_system_pc",
+  color = "grey",
+  labels = FALSE
+) +
+  scale_fill_continuous(
+    low = "white",
+    high = "green",
+    name = "Dollars",
+    label = scales::comma
+  ) +
+  theme(legend.position = "right") +
   labs(title = "Justice system cost per capita by State", caption = "Source: @https://bjs.gov")
 
 ggplot(df_consolidated, aes(x=population_k, y=total_justice_system_pc)) +
@@ -208,8 +255,8 @@ ggplot(df_consolidated, aes(x=population_k, y=total_justice_system_pc)) +
 ```{r, message=FALSE, warning=FALSE, echo = TRUE}
 cor(df_consolidated$population_k,df_consolidated$total_justice_system_pc)
 ```
-Map shows per capita cost hasn't decresed with state population. For states like California it is still high.
-My hypothesis was per capita cost would decrese with increase in population. Hence I was expecting strong negative correlation value. However correlation value shows weak positive correlation.
+Map shows per capita cost hasn't decreased with state population. For states like California it is still high.
+My hypothesis was per capita cost would decrease with increase in population. Hence I was expecting strong negative correlation value. However correlation value shows weak positive correlation.
 
 It means my hypothesis was wrong.
 
@@ -225,7 +272,7 @@ There is strong positive correlation between number of employees in Police prote
 cor(df_consolidated$jl_total_employees,df_consolidated$judician_and_legal_amount)
 ```
 
-There is moderate positive correlation between number of employees in Police protection services and expenditure It means as number of employees in department increases, the expenditure increases moderatley. This may be because Judicain and Legal system has other sources of revenues like court fees, penalties, motor vehicle registration, tax, license fees etc.
+There is moderate positive correlation between number of employees in Police protection services and expenditure It means as number of employees in department increases, the expenditure increases moderately. This may be because Judicial and Legal system has other sources of revenues like court fees, penalties, motor vehicle registration, tax, license fees etc.
 
 ### Correction services  employee and cost relationship
 ```{r, message=FALSE, warning=FALSE, echo = TRUE}
@@ -240,31 +287,42 @@ I was interested to check the distribution of earnings for police protection sta
 
 Lets check distribution with density plot.
 ```{r, message=FALSE, warning=FALSE, echo = TRUE}
-p <- ggplot(df_consolidated, aes(x=pp_average_earnings)) +
-  geom_histogram(aes(y=..density..),color="darkblue", fill="lightblue",binwidth = 100) +
-  geom_density(alpha=.2, fill="#FF6666") +
-  geom_vline(aes(xintercept=mean(pp_average_earnings)),
-             color="blue", linetype="dashed", size=1)
+p <- ggplot(df_consolidated, aes(x = pp_average_earnings)) +
+  geom_histogram(
+    aes(y = ..density..),
+    color = "darkblue",
+    fill = "lightblue",
+    binwidth = 100
+  ) +
+  geom_density(alpha = .2, fill = "#FF6666") +
+  geom_vline(
+    aes(xintercept = mean(pp_average_earnings)),
+    color = "blue",
+    linetype = "dashed",
+    size = 1
+  )
 p
 ```
-Distributio is positively skewed. In majority of states earning looks to range between 4000 to 6000.
+Distribution is positively skewed. In majority of states earning looks to range between 4000 to 6000.
 
 For better earnings, we will just filter out states where earnings are more than 3 quartile i.e. 75+ percentile.
 I will use quantile function.
 ```{r, message=FALSE, warning=FALSE, echo = TRUE}
-pp_earning_df <- df_consolidated[ df_consolidated$pp_average_earnings > quantile(df_consolidated$pp_average_earnings , 0.75, na.rm = TRUE ),]
-kable(head(pp_earning_df[,c('state','pp_average_earnings')],50),caption="Lucrative states for Police Protection jobs")
+pp_earning_df <-
+  df_consolidated[df_consolidated$pp_average_earnings > quantile(df_consolidated$pp_average_earnings , 0.75, na.rm = TRUE), ]
+kable(head(pp_earning_df[, c('state', 'pp_average_earnings')], 50), caption =
+        "Lucrative states for Police Protection jobs")
 ```
 
 # Implications 
-This consolidated dataset provides lot of datapoints on how Justsice System in each state spends its funding.It allows policy makers to understand expenditure in various functions and provides insight into optimization as well as investments required in each area. These insights can be used for prediction of budgets for future years. The long term implication is on well being of society in the area.
+This consolidated dataset provides lot of datapoints on how Justice System in each state spends its funding.It allows policy makers to understand expenditure in various functions and provides insight into optimization as well as investments required in each area. These insights can be used for prediction of budgets for future years. The long term implication is on well being of society in the area.
 
 # Limitations
-Its natural to compare different states on various variables in dataset. However it is important to note that, each State government is different and handles responsibilities differently. There is variation in scope of services offered by each state government. E.g. some state governments directly administer certain activities that elsewhere are undertaken by local governments, with or without fiscal aid. There is also variation in the division of responsibilities that exist for counties and cities.Governemntal structure, degree of,urbanization, and population density may affect the comparability of expenditure and employment data.
+Its natural to compare different states on various variables in dataset. However it is important to note that, each State government is different and handles responsibilities differently. There is variation in scope of services offered by each state government. E.g. some state governments directly administer certain activities that elsewhere are undertaken by local governments, with or without fiscal aid. There is also variation in the division of responsibilities that exist for counties and cities.Governmental structure, degree of,urbanization, and population density may affect the comparability of expenditure and employment data.
 
 # Concluding Remarks
-Its natural to observe incrase in overall expenditure on justice system with increased population and staffing to perform duties. However per capita expenditure doesn't decrease with increased population. It means there are other non self-evident facotors which are adding a to overall cost. These factors could be buildings, communication devices, equipments, utility services,contracting services, forensic labs, retirement benefits to ex-employees etc.
+Its natural to observe increase in overall expenditure on justice system with increased population and staffing to perform duties. However per capita expenditure doesn't decrease with increased population. It means there are other non self-evident factors which are adding a to overall cost. These factors could be buildings, communication devices, equipment, utility services,contracting services, forensic labs, retirement benefits to ex-employees etc.
 
-Police protection and correction services expenditure increase with increase in employess with strong correlation. However expenditure in judician and legal services increase less moderately with increase in employyes. It means Judicial and Legal services have sources of revenues from court fees, penalties, registration services, inspection services, license services etc.
+Police protection and correction services expenditure increase with increase in employees with strong correlation. However expenditure in judicial and legal services increase less moderately with increase in employees. It means Judicial and Legal services have sources of revenues from court fees, penalties, registration services, inspection services, license services etc.
 
 
